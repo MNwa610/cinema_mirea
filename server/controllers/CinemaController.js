@@ -1,4 +1,4 @@
-const Cinema = require('../models/Cinema');
+const {Cinema} = require('../models/Cinema');
 
 exports.createCinema = async (req, res) => {
     try {
