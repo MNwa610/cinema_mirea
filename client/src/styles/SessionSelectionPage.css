@@ -1,0 +1,209 @@
+.session-selection-page {
+  min-height: calc(100vh - 80px);
+  padding: 2rem 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.back-btn {
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  transition: background-color 0.3s;
+}
+
+.back-btn:hover {
+  background-color: #1e40af;
+}
+
+.film-info-header {
+  margin-bottom: 2rem;
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+  font-size: 2rem;
+  color: #1e3a8a;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.film-mini-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.film-mini-info h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+}
+
+.film-mini-info span {
+  color: #666;
+  font-size: 1rem;
+}
+
+.cinemas-selection,
+.sessions-section {
+  margin-bottom: 2rem;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  color: #1e3a8a;
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+}
+
+.cinemas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cinema-select-btn {
+  background-color: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.cinema-select-btn:hover {
+  border-color: #1e3a8a;
+  background-color: #f0f7ff;
+}
+
+.cinema-select-btn.active {
+  border-color: #1e3a8a;
+  background-color: #e0e7ff;
+}
+
+.cinema-btn-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cinema-btn-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e3a8a;
+}
+
+.cinema-btn-address {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.session-card {
+  background-color: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.session-card:hover {
+  border-color: #1e3a8a;
+  background-color: #e0e7ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+}
+
+.session-time {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1e3a8a;
+  margin-bottom: 0.5rem;
+}
+
+.session-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.session-hall {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.session-price {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #000;
+}
+
+.no-sessions {
+  text-align: center;
+  padding: 3rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.no-sessions p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.error {
+  color: #dc2626;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .sessions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .session-card {
+    padding: 1rem;
+  }
+
+  .session-time {
+    font-size: 1.3rem;
+  }
+}

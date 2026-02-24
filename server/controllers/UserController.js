@@ -1,12 +1,19 @@
-const {User} = require('../models/User');
+const {User} = require('../models/models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 exports.registerUser = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, address } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({ username, email, password: hashedPassword });
+        const userData = { username, email, password: hashedPassword };
+        
+        // Если адрес указан при регистрации, добавляем его
+        if (address) {
+            userData.address = address;
+        }
+        
+        const newUser = await User.create(userData);
         res.status(201).json({ message: 'Успешная регистрация пользователя', user: newUser });
     } catch (error) {
         res.status(500).json({ message: 'Неправильныя регистрация пользователя', error });

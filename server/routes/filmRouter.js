@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const filmController = require('../controllers/FilmController');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authMiddleware } = require('../middleware/authMiddleware');
 
 router.post('/create', filmController.createFilm);
+router.get('/:filmId/cinemas', filmController.getCinemasForFilm);
 router.get('/:filmId', filmController.getFilm);
 router.get('/', filmController.getAllFilms);
 router.patch('/:filmId/update', authMiddleware, filmController.updateFilm);

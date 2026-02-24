@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const cinemaController = require('../controllers/CinemaController');
-const authMiddleware = require('../middleware/authMiddleware');
+const { authMiddleware } = require('../middleware/authMiddleware');
 
 router.post('/create', cinemaController.createCinema);
 router.get('/:cinemaId', cinemaController.getCinema);

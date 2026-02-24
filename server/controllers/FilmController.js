@@ -1,4 +1,4 @@
-const {Film} = require('../models/Film');
+const { Film, Cinema } = require('../models/models');
 
 exports.createFilm = async (req, res) => {
     try {
@@ -27,6 +27,30 @@ exports.getAllFilms = async (req, res) => {
         res.json(films);
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при получении фильмов', error });
+    }
+};
+
+// Получить список кинотеатров, в которых идет данный фильм
+exports.getCinemasForFilm = async (req, res) => {
+    try {
+        const filmId = req.params.filmId;
+
+        const film = await Film.findByPk(filmId, {
+            include: [
+                {
+                    model: Cinema,
+                    through: { attributes: [] }
+                }
+            ]
+        });
+
+        if (!film) {
+            return res.status(404).json({ message: 'Фильм не найден' });
+        }
+
+        res.json(film.cinemas || []);
+    } catch (error) {
+        res.status(500).json({ message: 'Ошибка при получении кинотеатров для фильма', error });
     }
 };
 

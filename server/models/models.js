@@ -27,6 +27,12 @@ const User = sequelize.define('users', {
     address: {
         type: DataTypes.TEXT
     },
+    latitude: {
+        type: DataTypes.DECIMAL(10, 8)
+    },
+    longitude: {
+        type: DataTypes.DECIMAL(11, 8)
+    },
     role:{
         type: DataTypes.STRING,
         defaultValue: "USER"
