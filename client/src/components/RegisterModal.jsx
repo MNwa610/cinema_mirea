@@ -6,6 +6,7 @@ function RegisterModal({ onClose, onSuccess, onSwitchToLogin }) {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [address, setAddress] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -18,7 +19,8 @@ function RegisterModal({ onClose, onSuccess, onSwitchToLogin }) {
       const response = await axios.post('/api/user/registration', {
         username,
         email,
-        password
+        password,
+        address: address.trim() || undefined
       })
 
       if (response.data.user) {
@@ -79,6 +81,19 @@ function RegisterModal({ onClose, onSuccess, onSwitchToLogin }) {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+          </div>
+          <div className="form-group">
+            <label htmlFor="address">Адрес (необязательно):</label>
+            <input
+              type="text"
+              id="address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Например: Москва, ул. Тверская, д. 1"
+            />
+            <span className="form-hint">
+              Используется для карт и построения маршрутов до кинотеатров.
+            </span>
           </div>
           <button type="submit" className="submit-btn" disabled={loading}>
             {loading ? 'Регистрация...' : 'Зарегистрироваться'}

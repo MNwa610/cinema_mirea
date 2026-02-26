@@ -6,24 +6,42 @@ import '../styles/HomePage.css'
 function HomePage() {
   const [films, setFilms] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchFilms = async () => {
-      try {
-        const response = await axios.get('/api/film/')
-        setFilms(response.data)
-      } catch (err) {
-        setError('Ошибка при загрузке фильмов')
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchFilms()
+    loadMoreFilms(true)
   }, [])
+
+  const loadMoreFilms = async (isInitial = false) => {
+    try {
+      if (isInitial) {
+        setLoading(true)
+      } else {
+        setLoadingMore(true)
+      }
+      setError('')
+
+      const exclude = films.map((f) => f.id).filter(Boolean).join(',')
+      const resp = await axios.get(
+        `/api/film/external/random?take=10${exclude ? `&exclude=${encodeURIComponent(exclude)}` : ''}`
+      )
+      const items = Array.isArray(resp.data?.items) ? resp.data.items : []
+
+      if (isInitial) {
+        setFilms(items)
+      } else {
+        setFilms((prev) => [...prev, ...items])
+      }
+    } catch (err) {
+      console.error(err)
+      setError('Ошибка при загрузке фильмов из Кинопоиска')
+    } finally {
+      setLoading(false)
+      setLoadingMore(false)
+    }
+  }
 
   const handleFilmClick = (filmId) => {
     navigate(`/film/${filmId}`)
@@ -95,6 +113,16 @@ function HomePage() {
               </div>
             ))
           )}
+        </div>
+
+        <div className="load-more-wrapper">
+          <button
+            className="load-more-btn"
+            onClick={() => loadMoreFilms(false)}
+            disabled={loadingMore}
+          >
+            {loadingMore ? 'Загрузка...' : 'Еще'}
+          </button>
         </div>
       </div>
     </div>

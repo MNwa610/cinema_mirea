@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: '/api',
 })
 
-// Добавляем токен в заголовки для каждого запроса
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
@@ -18,7 +17,6 @@ api.interceptors.request.use(
   }
 )
 
-// Обрабатываем ошибки авторизации
 api.interceptors.response.use(
   (response) => response,
   (error) => {

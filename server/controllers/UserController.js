@@ -5,10 +5,14 @@ const jwt = require('jsonwebtoken');
 exports.registerUser = async (req, res) => {
     try {
         const { username, email, password, address } = req.body;
+        
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: 'Имя пользователя, email и пароль обязательны' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const userData = { username, email, password: hashedPassword };
-        
-        // Если адрес указан при регистрации, добавляем его
+
         if (address) {
             userData.address = address;
         }
@@ -16,7 +20,15 @@ exports.registerUser = async (req, res) => {
         const newUser = await User.create(userData);
         res.status(201).json({ message: 'Успешная регистрация пользователя', user: newUser });
     } catch (error) {
-        res.status(500).json({ message: 'Неправильныя регистрация пользователя', error });
+        console.error('Registration error:', error);
+
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({
+                message: 'Пользователь с таким email или именем уже существует'
+            });
+        }
+
+        res.status(500).json({ message: 'Ошибка при регистрации пользователя' });
     }
 };
 

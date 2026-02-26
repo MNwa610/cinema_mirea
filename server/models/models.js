@@ -76,6 +76,9 @@ const Film = sequelize.define('films', {
     duration: {
         type: DataTypes.INTEGER
     },
+    kinopoiskId: {
+        type: DataTypes.INTEGER
+    },
 }, {
     timestamps: true
 })

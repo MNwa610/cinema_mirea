@@ -239,6 +239,62 @@
   max-width: 600px;
 }
 
+.facts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fact-item {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid #e5e7eb;
+  position: relative;
+}
+
+.fact-item--spoiler {
+  border-color: #f97316;
+  background: #fff7ed;
+}
+
+.fact-spoiler-label {
+  display: inline-block;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #c2410c;
+  background: #ffedd5;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.fact-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #111827;
+}
+
+.facts-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+.facts-empty {
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
 .cinema-filters {
   margin-top: 1.5rem;
   margin-bottom: 1rem;
@@ -340,6 +396,24 @@
 
 .route-map-placeholder {
   min-height: 260px;
+}
+
+.yandex-route-map-wrapper {
+  width: 100%;
+  height: 100%;
+  background-color: #eef2ff;
+}
+
+.yandex-route-map {
+  width: 100%;
+  height: 320px;
+}
+
+.map-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  padding: 8px 12px;
+  font-size: 0.9rem;
 }
 
 .no-cinemas-for-film {

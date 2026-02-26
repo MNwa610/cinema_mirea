@@ -20,7 +20,7 @@ function SessionSelectionPage() {
 
   const fetchFilm = async () => {
     try {
-      const response = await axios.get(`/api/film/${filmId}`)
+      const response = await axios.get(`/api/film/external/${filmId}`)
       setFilm(response.data)
     } catch (err) {
       setError('Ошибка при загрузке фильма')
@@ -30,7 +30,7 @@ function SessionSelectionPage() {
 
   const fetchCinemas = async () => {
     try {
-      const response = await axios.get('/api/cinema/')
+      const response = await axios.get('/api/cinema/?city=moscow')
       setCinemas(response.data)
     } catch (err) {
       console.error(err)

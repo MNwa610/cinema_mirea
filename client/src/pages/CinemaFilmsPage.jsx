@@ -28,8 +28,9 @@ function CinemaFilmsPage() {
 
   const fetchFilms = async () => {
     try {
-      const response = await axios.get('/api/film/')
-      setFilms(response.data)
+      const response = await axios.get('/api/film/external/random?take=18')
+      const items = Array.isArray(response.data?.items) ? response.data.items : []
+      setFilms(items)
     } catch (err) {
       setError('Ошибка при загрузке фильмов')
       console.error(err)
@@ -66,7 +67,6 @@ function CinemaFilmsPage() {
           </div>
         )}
 
-        {/* Место для карты - будет подключено через API */}
         <div className="map-container">
           <div className="map-placeholder">
             <p>Карта будет здесь</p>

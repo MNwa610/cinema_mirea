@@ -8,7 +8,6 @@ function LocationSelector({ onLocationChange, currentAddress }) {
   const [location, setLocation] = useState(null)
 
   useEffect(() => {
-
     const savedAddress = localStorage.getItem('userAddress')
     const savedLocation = localStorage.getItem('userLocation')
     if (savedAddress) {
@@ -27,81 +26,78 @@ function LocationSelector({ onLocationChange, currentAddress }) {
     }
   }, [])
 
-  const detectLocation = () => {
+  const detectLocation = async () => {
     setIsDetecting(true)
     setError('')
 
-    if (!navigator.geolocation) {
-      setError('Геолокация не поддерживается вашим браузером')
-      setIsDetecting(false)
-      return
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords
-        const loc = { latitude, longitude }
-        setLocation(loc)
-
-        try {
-          const addressText = await reverseGeocode(latitude, longitude)
-          setAddress(addressText)
-          localStorage.setItem('userAddress', addressText)
-          localStorage.setItem('userLocation', JSON.stringify(loc))
-          
-          if (onLocationChange) {
-            onLocationChange(loc, addressText)
-          }
-        } catch (err) {
-
-          const coordAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
-          setAddress(coordAddress)
-          localStorage.setItem('userAddress', coordAddress)
-          localStorage.setItem('userLocation', JSON.stringify(loc))
-          
-          if (onLocationChange) {
-            onLocationChange(loc, coordAddress)
-          }
-        }
-        setIsDetecting(false)
-      },
-      (err) => {
-        setError('Не удалось определить местоположение. Разрешите доступ к геолокации.')
-        setIsDetecting(false)
-        console.error('Geolocation error:', err)
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+    try {
+      if (!navigator.geolocation) {
+        throw new Error('Geolocation is not supported')
       }
-    )
+
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        )
+      })
+
+      const latitude = position.coords.latitude
+      const longitude = position.coords.longitude
+
+      const loc = { latitude, longitude }
+      setLocation(loc)
+
+      try {
+        const addressText = await reverseGeocode(latitude, longitude)
+        setAddress(addressText)
+        localStorage.setItem('userAddress', addressText)
+        localStorage.setItem('userLocation', JSON.stringify(loc))
+
+        if (onLocationChange) {
+          onLocationChange(loc, addressText)
+        }
+      } catch (err) {
+        const coordAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+        setAddress(coordAddress)
+        localStorage.setItem('userAddress', coordAddress)
+        localStorage.setItem('userLocation', JSON.stringify(loc))
+
+        if (onLocationChange) {
+          onLocationChange(loc, coordAddress)
+        }
+      }
+    } catch (err) {
+      console.error('Detect location error:', err)
+      setError('Не удалось определить местоположение. Попробуйте позже или введите адрес вручную.')
+    } finally {
+      setIsDetecting(false)
+    }
   }
 
   const reverseGeocode = async (lat, lng) => {
-
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ru`,
-        {
-          headers: {
-            'User-Agent': 'AfishaApp/1.0'
-          }
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ru`
+      const response = await fetch(url, {
+        headers: {
+          'Accept-Language': 'ru'
         }
-      )
+      })
+      if (!response.ok) {
+        throw new Error('Reverse geocode failed')
+      }
       const data = await response.json()
-      if (data.address) {
-        const parts = []
-        if (data.address.road) parts.push(data.address.road)
-        if (data.address.house_number) parts.push(data.address.house_number)
-        if (parts.length > 0) {
-          return `${parts.join(' ')}, ${data.address.city || data.address.town || data.address.village || ''}`
-        }
-        return data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+      if (data.display_name) {
+        return data.display_name
       }
       return `${lat.toFixed(6)}, ${lng.toFixed(6)}`
     } catch (err) {
-      console.error('Reverse geocoding error:', err)
+      console.error('Reverse geocoding error (OSM Nominatim):', err)
       return `${lat.toFixed(6)}, ${lng.toFixed(6)}`
     }
   }
@@ -110,7 +106,7 @@ function LocationSelector({ onLocationChange, currentAddress }) {
     const newAddress = e.target.value
     setAddress(newAddress)
     localStorage.setItem('userAddress', newAddress)
-    
+
     if (onLocationChange && location) {
       onLocationChange(location, newAddress)
     }
@@ -126,25 +122,37 @@ function LocationSelector({ onLocationChange, currentAddress }) {
     setError('')
 
     try {
-ё
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&accept-language=ru`,
-        {
-          headers: {
-            'User-Agent': 'AfishaApp/1.0'
-          }
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        address
+      )}&limit=1&accept-language=ru`
+      const response = await fetch(url, {
+        headers: {
+          'Accept-Language': 'ru'
         }
-      )
-      const data = await response.json()
-      
-      if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat)
-        const lng = parseFloat(data[0].lon)
-        const loc = { latitude: lat, longitude: lng }
+      })
+      if (!response.ok) {
+        throw new Error('Geocode failed')
+      }
+      const results = await response.json()
+
+      if (Array.isArray(results) && results.length > 0) {
+        const best = results[0]
+        const lat = parseFloat(best.lat)
+        const lon = parseFloat(best.lon)
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+          throw new Error('Invalid coordinates from geocoder')
+        }
+
+        const loc = {
+          latitude: lat,
+          longitude: lon
+        }
+
         setLocation(loc)
         localStorage.setItem('userAddress', address)
         localStorage.setItem('userLocation', JSON.stringify(loc))
-        
+
         if (onLocationChange) {
           onLocationChange(loc, address)
         }
@@ -153,7 +161,7 @@ function LocationSelector({ onLocationChange, currentAddress }) {
       }
     } catch (err) {
       setError('Ошибка при поиске адреса')
-      console.error('Geocoding error:', err)
+      console.error('Geocoding error (OSM Nominatim):', err)
     } finally {
       setIsDetecting(false)
     }
@@ -196,7 +204,7 @@ function LocationSelector({ onLocationChange, currentAddress }) {
       </div>
 
       {error && <div className="location-error">{error}</div>}
-      
+
       {location && (
         <div className="location-info">
           <span className="location-status">✓ Местоположение определено</span>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
+import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
 import CinemaFilmsPage from './pages/CinemaFilmsPage'
 import FilmDetailsPage from './pages/FilmDetailsPage'
@@ -20,6 +21,7 @@ function App() {
             <Route path="/film/:filmId/sessions" element={<SessionSelectionPage />} />
           </Routes>
         </main>
+        <Footer />
       </div>
     </Router>
   )

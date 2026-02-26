@@ -125,6 +125,37 @@
   color: #dc2626;
 }
 
+.load-more-wrapper {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.load-more-btn {
+  background-color: #1e3a8a;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 2.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+  transition: background-color 0.2s ease, transform 0.1s ease,
+    box-shadow 0.2s ease;
+}
+
+.load-more-btn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(30, 64, 175, 0.4);
+}
+
+.load-more-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(30, 64, 175, 0.3);
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 0 1rem;
