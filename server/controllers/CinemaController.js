@@ -1,4 +1,6 @@
-const {Cinema} = require('../models/models');
+const { Cinema } = require('../models/models');
+const { Op } = require('sequelize');
+const { STATIC_CINEMAS } = require('../data/staticCinemas');
 
 exports.createCinema = async (req, res) => {
     try {
@@ -23,7 +25,30 @@ exports.getCinema = async (req, res) => {
 
 exports.getAllCinemas = async (req, res) => {
     try {
-        const cinemas = await Cinema.findAll();
+        const onlyMoscow = String(req.query.city || '').toLowerCase() === 'moscow';
+
+        // Сначала пробуем взять кинотеатры из базы
+        const where = onlyMoscow
+            ? {
+                address: {
+                    [Op.iLike]: '%москва%'
+                }
+            }
+            : undefined;
+
+        let cinemas = [];
+        try {
+            cinemas = await Cinema.findAll({ where });
+        } catch (dbError) {
+            // Если база недоступна или таблицы нет, просто игнорируем
+            console.error('DB error when loading cinemas, fallback to static:', dbError);
+        }
+
+        // Если в базе нет ни одного кинотеатра, возвращаем 5 статичных
+        if (!cinemas || cinemas.length === 0) {
+            return res.json(STATIC_CINEMAS);
+        }
+
         res.json(cinemas);
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при получении кинотеатров', error });

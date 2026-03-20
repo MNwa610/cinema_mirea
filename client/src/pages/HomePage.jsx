@@ -6,24 +6,35 @@ import '../styles/HomePage.css'
 function HomePage() {
   const [films, setFilms] = useState([])
   const [loading, setLoading] = useState(true)
+  const [visibleCount, setVisibleCount] = useState(10)
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchFilms = async () => {
-      try {
-        const response = await axios.get('/api/film/')
-        setFilms(response.data)
-      } catch (err) {
-        setError('Ошибка при загрузке фильмов')
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchFilms()
+    loadWeeklyFilms()
   }, [])
+
+  const loadWeeklyFilms = async () => {
+    try {
+      setLoading(true)
+      setError('')
+
+      const resp = await axios.get('/api/film/external/weekly')
+      const items = Array.isArray(resp.data?.items) ? resp.data.items : []
+
+      setFilms(items)
+      setVisibleCount(10)
+    } catch (err) {
+      console.error(err)
+      setError('Ошибка при загрузке фильмов недели из Кинопоиска')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => Math.min(prev + 5, films.length))
+  }
 
   const handleFilmClick = (filmId) => {
     navigate(`/film/${filmId}`)
@@ -49,7 +60,7 @@ function HomePage() {
           {films.length === 0 ? (
             <p className="no-films">Фильмы не найдены</p>
           ) : (
-            films.map((film) => (
+            films.slice(0, visibleCount).map((film) => (
               <div
                 key={film.id}
                 className="film-card"
@@ -96,6 +107,17 @@ function HomePage() {
             ))
           )}
         </div>
+
+        {films.length > visibleCount && (
+          <div className="load-more-wrapper">
+            <button
+              className="load-more-btn"
+              onClick={handleLoadMore}
+            >
+              Еще
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

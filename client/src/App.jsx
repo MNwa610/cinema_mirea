@@ -1,10 +1,12 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
+import Footer from './components/Footer'
 import HomePage from './pages/HomePage'
 import CinemaFilmsPage from './pages/CinemaFilmsPage'
 import FilmDetailsPage from './pages/FilmDetailsPage'
 import SessionSelectionPage from './pages/SessionSelectionPage'
+import ProfilePage from './pages/ProfilePage'
 import './styles/App.css'
 
 function App() {
@@ -18,8 +20,10 @@ function App() {
             <Route path="/cinema/:cinemaId" element={<CinemaFilmsPage />} />
             <Route path="/film/:filmId" element={<FilmDetailsPage />} />
             <Route path="/film/:filmId/sessions" element={<SessionSelectionPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </main>
+        <Footer />
       </div>
     </Router>
   )

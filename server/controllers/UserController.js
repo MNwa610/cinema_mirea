@@ -5,6 +5,11 @@ const jwt = require('jsonwebtoken');
 exports.registerUser = async (req, res) => {
     try {
         const { username, email, password, address } = req.body;
+        
+        if (!username || !email || !password) {
+            return res.status(400).json({ message: 'Имя пользователя, email и пароль обязательны' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const userData = { username, email, password: hashedPassword };
         
@@ -16,7 +21,15 @@ exports.registerUser = async (req, res) => {
         const newUser = await User.create(userData);
         res.status(201).json({ message: 'Успешная регистрация пользователя', user: newUser });
     } catch (error) {
-        res.status(500).json({ message: 'Неправильныя регистрация пользователя', error });
+        console.error('Registration error:', error);
+
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({
+                message: 'Пользователь с таким email или именем уже существует'
+            });
+        }
+
+        res.status(500).json({ message: 'Ошибка при регистрации пользователя' });
     }
 };
 
@@ -64,10 +77,143 @@ exports.updateUserProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'Пользователь не найден' });
         }
-        await user.update(req.body);
+
+        const {
+            username,
+            address,
+            latitude,
+            longitude,
+            avatarUrl,
+            currentPassword,
+            newPassword
+        } = req.body;
+
+        if (username) {
+            user.username = username;
+        }
+        if (address !== undefined) {
+            user.address = address;
+        }
+        if (latitude !== undefined) {
+            user.latitude = latitude;
+        }
+        if (longitude !== undefined) {
+            user.longitude = longitude;
+        }
+        if (avatarUrl !== undefined) {
+            user.avatarUrl = avatarUrl;
+        }
+
+        if (newPassword) {
+            if (!currentPassword) {
+                return res.status(400).json({ message: 'Укажите текущий пароль для изменения пароля' });
+            }
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Текущий пароль указан неверно' });
+            }
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            user.password = hashedPassword;
+        }
+
+        await user.save();
         res.json({ message: 'Профиль пользователя успешно обновлен', user });
     } catch (error) {
         res.status(500).json({ message: 'Ошибка при обновлении профиля пользователя', error });
+    }
+};
+
+// ===== Просмотренные фильмы пользователя =====
+const { Film, UserFilmRelationship } = require('../models/models');
+
+exports.addWatchedFilm = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const externalId = req.params.filmId;
+        const externalIdNum = Number(externalId);
+
+        // Фильм уже синхронизируется с базой при запросе /api/film/external/:id
+        // (см. FilmController.getExternalFilm), поэтому здесь просто ищем его по kinopoiskId.
+        const film = await Film.findOne({
+            where: {
+                kinopoiskId: externalIdNum || externalId
+            }
+        });
+
+        if (!film) {
+            return res.status(404).json({ message: 'Фильм не найден в базе. Откройте страницу фильма и попробуйте еще раз.' });
+        }
+
+        await UserFilmRelationship.findOrCreate({
+            where: {
+                user_id: userId,
+                film_id: film.id,
+                userId: userId,
+                filmId: film.id
+            }
+        });
+
+        res.json({ message: 'Фильм отмечен как просмотренный' });
+    } catch (error) {
+        console.error('addWatchedFilm error:', error);
+        res.status(500).json({ message: 'Ошибка при отметке фильма как просмотренного', error });
+    }
+};
+
+exports.getWatchedFilms = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const relations = await UserFilmRelationship.findAll({
+            where: { user_id: userId }
+        });
+
+        const filmIds = relations
+            .map(rel => rel.film_id)
+            .filter(Boolean);
+
+        if (!filmIds.length) {
+            return res.json([]);
+        }
+
+        const films = await Film.findAll({
+            where: { id: filmIds }
+        });
+
+        res.json(films);
+    } catch (error) {
+        console.error('getWatchedFilms error:', error);
+        res.status(500).json({ message: 'Ошибка при получении просмотренных фильмов', error });
+    }
+};
+
+exports.removeWatchedFilm = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const externalId = req.params.filmId;
+        const externalIdNum = Number(externalId);
+
+        const film = await Film.findOne({
+            where: {
+                kinopoiskId: externalIdNum || externalId
+            }
+        });
+
+        if (!film) {
+            return res.status(404).json({ message: 'Фильм не найден в базе' });
+        }
+
+        await UserFilmRelationship.destroy({
+            where: {
+                user_id: userId,
+                film_id: film.id
+            }
+        });
+
+        res.json({ message: 'Фильм удален из просмотренных' });
+    } catch (error) {
+        console.error('removeWatchedFilm error:', error);
+        res.status(500).json({ message: 'Ошибка при удалении фильма из просмотренных', error });
     }
 };
 

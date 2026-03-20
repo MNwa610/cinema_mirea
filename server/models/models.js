@@ -33,6 +33,9 @@ const User = sequelize.define('users', {
     longitude: {
         type: DataTypes.DECIMAL(11, 8)
     },
+    avatarUrl: {
+        type: DataTypes.STRING
+    },
     role:{
         type: DataTypes.STRING,
         defaultValue: "USER"
@@ -74,6 +77,9 @@ const Film = sequelize.define('films', {
         type: DataTypes.ARRAY(DataTypes.STRING)
     },
     duration: {
+        type: DataTypes.INTEGER
+    },
+    kinopoiskId: {
         type: DataTypes.INTEGER
     },
 }, {
