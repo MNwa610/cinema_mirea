@@ -12,8 +12,7 @@ exports.registerUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const userData = { username, email, password: hashedPassword };
-        
-        // Если адрес указан при регистрации, добавляем его
+
         if (address) {
             userData.address = address;
         }
@@ -123,7 +122,6 @@ exports.updateUserProfile = async (req, res) => {
     }
 };
 
-// ===== Просмотренные фильмы пользователя =====
 const { Film, UserFilmRelationship } = require('../models/models');
 
 exports.addWatchedFilm = async (req, res) => {
@@ -132,8 +130,6 @@ exports.addWatchedFilm = async (req, res) => {
         const externalId = req.params.filmId;
         const externalIdNum = Number(externalId);
 
-        // Фильм уже синхронизируется с базой при запросе /api/film/external/:id
-        // (см. FilmController.getExternalFilm), поэтому здесь просто ищем его по kinopoiskId.
         const film = await Film.findOne({
             where: {
                 kinopoiskId: externalIdNum || externalId

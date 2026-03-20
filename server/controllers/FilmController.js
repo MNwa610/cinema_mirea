@@ -5,13 +5,12 @@ const fetchFn = global.fetch;
 
 const KP_BASE = 'https://kinopoiskapiunofficial.tech/api';
 const KP_TOP_TYPE = 'TOP_250_BEST_FILMS';
-const KP_TOP_MAX_PAGES = 13; // 250 / 20 = 12.5 => 13
+const KP_TOP_MAX_PAGES = 13; 
 
-const topPageCache = new Map(); // key -> { expiresAt, data }
+const topPageCache = new Map(); 
 const TOP_CACHE_TTL_MS = 10 * 60 * 1000;
 
-// Кеш для недельных подборок фильмов (15 фильмов на неделю)
-const weeklyFilmsCache = new Map(); // key -> { expiresAt, items }
+const weeklyFilmsCache = new Map(); 
 
 function getKpApiKey() {
     return process.env.KINOPOISK_API_KEY;
@@ -178,7 +177,6 @@ exports.getAllFilms = async (req, res) => {
     }
 };
 
-// Получить список кинотеатров, в которых идет данный фильм
 exports.getCinemasForFilm = async (req, res) => {
     try {
         const filmId = req.params.filmId;
@@ -212,8 +210,6 @@ exports.getCinemasForFilm = async (req, res) => {
             console.error('DB error when loading cinemas for film, fallback to static:', dbError);
         }
 
-        // Если к фильму не привязан ни один кинотеатр в базе,
-        // отдаем 5 статичных кинотеатров (одинаковые для всех фильмов)
         if (!cinemasForFilm || cinemasForFilm.length === 0) {
             return res.json(STATIC_CINEMAS);
         }
@@ -224,7 +220,6 @@ exports.getCinemasForFilm = async (req, res) => {
     }
 };
 
-// ===== Kinopoisk films (external) =====
 exports.getExternalRandomFilms = async (req, res) => {
     try {
         const take = Math.min(Math.max(parseInt(req.query.take || '10', 10), 1), 30);
@@ -272,7 +267,6 @@ exports.getExternalRandomFilms = async (req, res) => {
     }
 };
 
-// Недельная подборка: фиксированные 15 фильмов на каждую неделю.
 exports.getExternalWeeklyFilms = async (req, res) => {
     try {
         const now = new Date();
@@ -342,7 +336,6 @@ exports.getExternalFilm = async (req, res) => {
         }
         const mapped = mapFilmDetails(details, staff);
 
-        // Синхронизируем базу: создаем или обновляем запись Film с kinopoiskId
         try {
             const [film, created] = await Film.findOrCreate({
                 where: { kinopoiskId: mapped.kinopoiskId },
@@ -374,7 +367,7 @@ exports.getExternalFilm = async (req, res) => {
             }
         } catch (dbError) {
             console.error('Failed to sync film with DB:', dbError);
-            // Не падаем для клиента, если синхронизация с БД не удалась
+
         }
 
         res.json(mapped);
@@ -395,13 +388,10 @@ exports.getExternalFilmFacts = async (req, res) => {
     }
 };
 
-// Отзывы о фильме из Kinopoisk
 exports.getExternalFilmReviews = async (req, res) => {
     try {
         const id = req.params.kinopoiskId;
         const page = Math.max(parseInt(req.query.page || '1', 10), 1);
-        // Документация Kinopoisk API для отзывов может отличаться,
-        // пробуем стандартный эндпоинт /v1/reviews с параметром filmId.
         const data = await kpFetchJson(`/v1/reviews?filmId=${id}&page=${page}`);
         res.json(data);
     } catch (error) {
@@ -410,8 +400,6 @@ exports.getExternalFilmReviews = async (req, res) => {
     }
 };
 
-// Локации, связанные с конкретным фильмом.
-// Берем первую страну производства из Kinopoisk и геокодируем ее через OSM Nominatim.
 exports.getFilmLocations = async (req, res) => {
     try {
         const filmId = req.params.filmId;
@@ -425,7 +413,6 @@ exports.getFilmLocations = async (req, res) => {
         const baseTitle =
             details?.nameRu || details?.nameEn || details?.nameOriginal || 'Фильм';
 
-        // Берем либо первую страну, либо название фильма как fallback
         const query = countries.length ? countries[0] : baseTitle;
 
         let location = null;
@@ -441,8 +428,6 @@ exports.getFilmLocations = async (req, res) => {
                 };
             }
         } catch (geoError) {
-            // Если геокодер не дал доступ (например, блокировка Nominatim), просто возвращаем пустой список,
-            // чтобы не ломать страницу фильма.
             console.error('geocodeLocationNominatim error for', query, geoError.message || geoError);
         }
 

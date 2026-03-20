@@ -20,7 +20,6 @@ app.get('/', (req, res) => {
 const start = async () => {
     try {
         await sequelize.authenticate();
-        // В dev-режиме подтягиваем изменения моделей в схему БД (добавит недостающие колонки вроде latitude/longitude)
         const shouldAlter =
             String(process.env.DB_SYNC_ALTER || '').toLowerCase() === 'true' ||
             process.env.NODE_ENV !== 'production';

@@ -27,7 +27,6 @@ exports.getAllCinemas = async (req, res) => {
     try {
         const onlyMoscow = String(req.query.city || '').toLowerCase() === 'moscow';
 
-        // Сначала пробуем взять кинотеатры из базы
         const where = onlyMoscow
             ? {
                 address: {
@@ -40,11 +39,10 @@ exports.getAllCinemas = async (req, res) => {
         try {
             cinemas = await Cinema.findAll({ where });
         } catch (dbError) {
-            // Если база недоступна или таблицы нет, просто игнорируем
+
             console.error('DB error when loading cinemas, fallback to static:', dbError);
         }
 
-        // Если в базе нет ни одного кинотеатра, возвращаем 5 статичных
         if (!cinemas || cinemas.length === 0) {
             return res.json(STATIC_CINEMAS);
         }

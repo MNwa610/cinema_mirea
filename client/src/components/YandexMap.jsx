@@ -90,7 +90,6 @@ function YandexMap({ from, to, markers = [], showRoute = false }) {
 
         const geoPoints = []
 
-        // Маркеры мест съемок (или любых точек)
         if (Array.isArray(markers) && markers.length > 0) {
           markers.forEach((m) => {
             const lat = Number(from?.m.latitude)
@@ -170,7 +169,6 @@ function YandexMap({ from, to, markers = [], showRoute = false }) {
           const bounds = ymaps.util.bounds.fromPoints(geoPoints)
           map.setBounds(bounds, { checkZoomRange: true, zoomMargin: 40 })
         } else {
-          // Нет точек — просто центр по умолчанию
           map.setCenter([55.751244, 37.618423], 10)
         }
       } catch (e) {

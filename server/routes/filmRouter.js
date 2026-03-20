@@ -10,7 +10,6 @@ router.get('/external/:kinopoiskId/facts', filmController.getExternalFilmFacts);
 router.get('/external/:kinopoiskId/reviews', filmController.getExternalFilmReviews);
 router.get('/external/:kinopoiskId', filmController.getExternalFilm);
 
-// Кинотеатры и локации для конкретного фильма
 router.get('/:filmId/cinemas', filmController.getCinemasForFilm);
 router.get('/:filmId/locations', filmController.getFilmLocations);
 

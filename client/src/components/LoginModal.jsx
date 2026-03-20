@@ -20,7 +20,6 @@ function LoginModal({ onClose, onSuccess, onSwitchToRegister }) {
       })
 
       if (response.data.token) {
-        // Получаем данные пользователя
         const userResponse = await axios.get('/api/user/auth', {
           headers: {
             'Authorization': `Bearer ${response.data.token}`
