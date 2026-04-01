@@ -28,8 +28,23 @@ function CinemaFilmsPage() {
 
   const fetchFilms = async () => {
     try {
-      const response = await axios.get('/api/film/')
-      setFilms(response.data)
+      const cacheKey = `cinema_${cinemaId}_films`
+      const cached = localStorage.getItem(cacheKey)
+      const cachedTime = localStorage.getItem(`${cacheKey}_time`)
+      const now = Date.now()
+
+      if (cached && cachedTime && (now - parseInt(cachedTime)) < 3600000) {
+        setFilms(JSON.parse(cached))
+        setLoading(false)
+        return
+      }
+
+      const response = await axios.get('/api/film/external/random?take=18')
+      const items = Array.isArray(response.data?.items) ? response.data.items : []
+      setFilms(items)
+
+      localStorage.setItem(cacheKey, JSON.stringify(items))
+      localStorage.setItem(`${cacheKey}_time`, now.toString())
     } catch (err) {
       setError('Ошибка при загрузке фильмов')
       console.error(err)
@@ -66,7 +81,6 @@ function CinemaFilmsPage() {
           </div>
         )}
 
-        {/* Место для карты - будет подключено через API */}
         <div className="map-container">
           <div className="map-placeholder">
             <p>Карта будет здесь</p>

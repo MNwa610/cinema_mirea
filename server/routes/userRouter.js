@@ -11,4 +11,9 @@ router.patch('/profile/update', authMiddleware, userController.updateUserProfile
 router.delete('/profile/delete', authMiddleware, userController.deleteUser);
 router.get('/users', authMiddleware, userController.getAllUsers);
 
+// Просмотренные фильмы
+router.post('/watched/:filmId', authMiddleware, userController.addWatchedFilm);
+router.get('/watched', authMiddleware, userController.getWatchedFilms);
+router.delete('/watched/:filmId', authMiddleware, userController.removeWatchedFilm);
+
 module.exports = router;

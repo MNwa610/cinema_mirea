@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import LoginModal from './LoginModal'
 import RegisterModal from './RegisterModal'
 import '../styles/Header.css'
 
 function Header() {
+  const navigate = useNavigate()
   const [showLogin, setShowLogin] = useState(false)
   const [showRegister, setShowRegister] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -13,21 +14,39 @@ function Header() {
 
   const handleLoginSuccess = (token, userData) => {
     localStorage.setItem('token', token)
+    localStorage.setItem('user', JSON.stringify(userData))
+    window.dispatchEvent(new Event('auth-changed'))
     setIsAuthenticated(true)
     setUser(userData)
     setShowLogin(false)
+    setShowRegister(false)
+    window.location.reload()
   }
 
   const handleLogout = () => {
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('userAddress')
+    localStorage.removeItem('userLocation')
+    window.dispatchEvent(new Event('auth-changed'))
     setIsAuthenticated(false)
     setUser(null)
+    navigate('/')
   }
 
   React.useEffect(() => {
     const token = localStorage.getItem('token')
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser)
+        setUser(parsed)
+        setIsAuthenticated(true)
+      } catch (e) {
+        localStorage.removeItem('user')
+      }
+    }
     if (token) {
-      // Проверка токена при загрузке
       axios.get('/api/user/auth', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -37,6 +56,7 @@ function Header() {
           if (res.data.id) {
             setIsAuthenticated(true)
             setUser(res.data)
+            localStorage.setItem('user', JSON.stringify(res.data))
           }
         })
         .catch(() => {
@@ -54,7 +74,28 @@ function Header() {
         <nav className="header-nav">
           {isAuthenticated ? (
             <div className="user-menu">
-              <span className="username">Привет, {user?.username || 'Пользователь'}!</span>
+              <button
+                className="user-profile-btn"
+                onClick={() => navigate('/profile')}
+              >
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.username || 'Профиль'}
+                    className="user-avatar"
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                    }}
+                  />
+                ) : (
+                  <span className="user-avatar-placeholder">
+                    {(user?.username || 'П')[0].toUpperCase()}
+                  </span>
+                )}
+                <span className="username">
+                  {user?.username || 'Пользователь'}
+                </span>
+              </button>
               <button onClick={handleLogout} className="logout-btn">Выйти</button>
             </div>
           ) : (

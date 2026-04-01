@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import { fetchYandexSuggest } from '../api/yandexSuggest'
 import '../styles/Modal.css'
 
 function RegisterModal({ onClose, onSuccess, onSwitchToLogin }) {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [address, setAddress] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [addressSuggestions, setAddressSuggestions] = useState([])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -18,7 +21,8 @@ function RegisterModal({ onClose, onSuccess, onSwitchToLogin }) {
       const response = await axios.post('/api/user/registration', {
         username,
         email,
-        password
+        password,
+        address: address.trim() || undefined
       })
 
       if (response.data.user) {
@@ -40,6 +44,20 @@ function RegisterModal({ onClose, onSuccess, onSwitchToLogin }) {
       setError(err.response?.data?.message || 'Ошибка при регистрации')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleAddressInput = async (value) => {
+    setAddress(value)
+    if (value.trim().length < 3) {
+      setAddressSuggestions([])
+      return
+    }
+    try {
+      const items = await fetchYandexSuggest(value)
+      setAddressSuggestions(items.slice(0, 6))
+    } catch (e) {
+      setAddressSuggestions([])
     }
   }
 
@@ -79,6 +97,36 @@ function RegisterModal({ onClose, onSuccess, onSwitchToLogin }) {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+          </div>
+          <div className="form-group">
+            <label htmlFor="address">Адрес (необязательно):</label>
+            <input
+              type="text"
+              id="address"
+              value={address}
+              onChange={(e) => handleAddressInput(e.target.value)}
+              placeholder="Например: Москва, ул. Тверская, д. 1"
+            />
+            {addressSuggestions.length > 0 && (
+              <div className="address-suggest-dropdown modal-address-suggest-dropdown">
+                {addressSuggestions.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    className="address-suggest-item"
+                    onClick={() => {
+                      setAddress(item)
+                      setAddressSuggestions([])
+                    }}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            )}
+            <span className="form-hint">
+              Используется для карт и построения маршрутов до кинотеатров.
+            </span>
           </div>
           <button type="submit" className="submit-btn" disabled={loading}>
             {loading ? 'Регистрация...' : 'Зарегистрироваться'}
